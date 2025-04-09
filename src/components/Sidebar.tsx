@@ -1,11 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, Users, Settings, LogOut, X } from 'lucide-react';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase'; // Make sure `db` is initialized for Firestore
 import { signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export function Sidebar() {
   const [showSettings, setShowSettings] = useState(false);
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [theme, setTheme] = useState('dark'); // Default theme
+
+  const user = auth.currentUser;
+
+  useEffect(() => {
+    const fetchTheme = async () => {
+      if (user) {
+        try {
+          const userDoc = doc(db, 'users', user.uid); // Fetch user document
+          const userSnap = await getDoc(userDoc);
+
+          if (userSnap.exists() && userSnap.data().theme) {
+            setTheme(userSnap.data().theme); // Set theme from Firebase
+          }
+        } catch (error) {
+          console.error('Error fetching theme:', error);
+        }
+      }
+    };
+
+    fetchTheme();
+  }, [user]);
+
+  const handleThemeChange = async (newTheme: string) => {
+    setTheme(newTheme);
+
+    if (user) {
+      try {
+        const userDoc = doc(db, 'users', user.uid);
+        await setDoc(userDoc, { theme: newTheme }, { merge: true }); // Save theme to Firebase
+      } catch (error) {
+        console.error('Error saving theme:', error);
+      }
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -13,23 +48,6 @@ export function Sidebar() {
     } catch (error) {
       console.error('Error signing out:', error);
     }
-  };
-
-  const handleMessagesClick = () => {
-    setActiveSection('Messages');
-    console.log('Navigating to Messages...');
-    // Add navigation logic here
-  };
-
-  const handleUsersClick = () => {
-    setActiveSection('Users');
-    console.log('Navigating to Users...');
-    // Add navigation logic here
-  };
-
-  const handleSettingsClick = () => {
-    setActiveSection('Settings');
-    setShowSettings(true);
   };
 
   return (
@@ -40,28 +58,20 @@ export function Sidebar() {
         </div>
         <nav className="flex-1 space-y-4">
           <button
-            onClick={handleMessagesClick}
-            className={`w-10 h-10 flex items-center justify-center ${
-              activeSection === 'Messages' ? 'text-white bg-gray-800' : 'text-gray-400'
-            } hover:text-white hover:bg-gray-800 rounded-lg transition-colors`}
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
             title="Messages"
           >
             <MessageSquare className="w-6 h-6" />
           </button>
           <button
-            onClick={handleUsersClick}
-            className={`w-10 h-10 flex items-center justify-center ${
-              activeSection === 'Users' ? 'text-white bg-gray-800' : 'text-gray-400'
-            } hover:text-white hover:bg-gray-800 rounded-lg transition-colors`}
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
             title="Users"
           >
             <Users className="w-6 h-6" />
           </button>
           <button
-            onClick={handleSettingsClick}
-            className={`w-10 h-10 flex items-center justify-center ${
-              activeSection === 'Settings' ? 'text-white bg-gray-800' : 'text-gray-400'
-            } hover:text-white hover:bg-gray-800 rounded-lg transition-colors`}
+            onClick={() => setShowSettings(true)}
+            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
             title="Settings"
           >
             <Settings className="w-6 h-6" />
@@ -93,7 +103,11 @@ export function Sidebar() {
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Theme
                 </label>
-                <select className="w-full bg-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select
+                  value={theme}
+                  onChange={(e) => handleThemeChange(e.target.value)}
+                  className="w-full bg-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
                   <option value="dark">Dark</option>
                   <option value="light">Light</option>
                 </select>
