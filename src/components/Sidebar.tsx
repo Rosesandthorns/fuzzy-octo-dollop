@@ -5,6 +5,7 @@ import { signOut } from 'firebase/auth';
 
 export function Sidebar() {
   const [showSettings, setShowSettings] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const handleLogout = async () => {
     try {
@@ -14,6 +15,23 @@ export function Sidebar() {
     }
   };
 
+  const handleMessagesClick = () => {
+    setActiveSection('Messages');
+    console.log('Navigating to Messages...');
+    // Add navigation logic here
+  };
+
+  const handleUsersClick = () => {
+    setActiveSection('Users');
+    console.log('Navigating to Users...');
+    // Add navigation logic here
+  };
+
+  const handleSettingsClick = () => {
+    setActiveSection('Settings');
+    setShowSettings(true);
+  };
+
   return (
     <>
       <div className="w-16 bg-gray-900 h-screen flex flex-col items-center py-4">
@@ -21,21 +39,29 @@ export function Sidebar() {
           <MessageSquare className="text-white w-6 h-6" />
         </div>
         <nav className="flex-1 space-y-4">
-          <button 
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          <button
+            onClick={handleMessagesClick}
+            className={`w-10 h-10 flex items-center justify-center ${
+              activeSection === 'Messages' ? 'text-white bg-gray-800' : 'text-gray-400'
+            } hover:text-white hover:bg-gray-800 rounded-lg transition-colors`}
             title="Messages"
           >
             <MessageSquare className="w-6 h-6" />
           </button>
-          <button 
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          <button
+            onClick={handleUsersClick}
+            className={`w-10 h-10 flex items-center justify-center ${
+              activeSection === 'Users' ? 'text-white bg-gray-800' : 'text-gray-400'
+            } hover:text-white hover:bg-gray-800 rounded-lg transition-colors`}
             title="Users"
           >
             <Users className="w-6 h-6" />
           </button>
-          <button 
-            onClick={() => setShowSettings(true)}
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+          <button
+            onClick={handleSettingsClick}
+            className={`w-10 h-10 flex items-center justify-center ${
+              activeSection === 'Settings' ? 'text-white bg-gray-800' : 'text-gray-400'
+            } hover:text-white hover:bg-gray-800 rounded-lg transition-colors`}
             title="Settings"
           >
             <Settings className="w-6 h-6" />
