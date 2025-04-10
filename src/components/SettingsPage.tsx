@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { useAuth } from '../hooks/useAuth';
+
+// Mock implementation for authentication
+const mockUser = { uid: '12345' }; // Replace with actual user details if available
+const mockUserTier = 'default'; // Replace with actual tier if available
 
 const SettingsPage = () => {
-  const { user, userTier } = useAuth();
+  const user = mockUser;
+  const userTier = mockUserTier;
+
   const [theme, setTheme] = useState('default');
   const [background, setBackground] = useState('#ffffff');
   const [gradientBackground, setGradientBackground] = useState('');
