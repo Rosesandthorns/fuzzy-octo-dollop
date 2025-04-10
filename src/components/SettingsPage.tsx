@@ -9,20 +9,20 @@ export const SettingsPage = () => {
   const [emojiPack, setEmojiPack] = useState('default');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [prefixes, setPrefixes] = useState(['!']);
-  const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState(''); // Error state
-
-  // Dummy user data for demonstration purposes (replace this with actual user data as needed)
-  const user = { uid: 'dummyUserId' };
-  const userTier = 'free'; // Replace with actual logic to determine the user's tier
+  const [userTier, setUserTier] = useState('free');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchSettings = async () => {
-      if (!user) return;
+      if (typeof window === 'undefined' || !window.auth?.currentUser) return;
+      const currentUser = window.auth.currentUser;
+
       setLoading(true);
       try {
-        const docRef = doc(db, 'userSettings', user.uid);
+        const docRef = doc(db, 'userSettings', currentUser.uid);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
           const data = docSnap.data();
           setTheme(data.theme || 'default');
@@ -31,6 +31,7 @@ export const SettingsPage = () => {
           setEmojiPack(data.emojiPack || 'default');
           setNotificationsEnabled(data.notificationsEnabled ?? true);
           setPrefixes(data.prefixes || ['!']);
+          setUserTier(data.tier || 'free');
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -40,20 +41,24 @@ export const SettingsPage = () => {
       }
     };
     fetchSettings();
-  }, [user]);
+  }, []);
 
   const saveSettings = async () => {
-    if (!user) return;
+    if (typeof window === 'undefined' || !window.auth?.currentUser) return;
+    const currentUser = window.auth.currentUser;
+
     setLoading(true);
     setError('');
+
     try {
-      await setDoc(doc(db, 'userSettings', user.uid), {
+      await setDoc(doc(db, 'userSettings', currentUser.uid), {
         theme,
         background,
         gradientBackground,
         emojiPack,
         notificationsEnabled,
         prefixes,
+        tier: userTier,
       });
       alert('Settings saved successfully!');
     } catch (error) {
@@ -66,7 +71,7 @@ export const SettingsPage = () => {
 
   const handlePrefixChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const newPrefixes = [...prefixes];
-    newPrefixes[index] = e.target.value.trim(); // Remove leading/trailing spaces
+    newPrefixes[index] = e.target.value.trim();
     setPrefixes(newPrefixes);
   };
 
@@ -83,20 +88,20 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">User Settings</h1>
+    <div className="p-6 max-w-4xl mx-auto text-white bg-zinc-900 rounded-2xl shadow-lg space-y-6">
+      <h1 className="text-4xl font-extrabold text-center">Settings</h1>
 
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <p className="text-center">Loading...</p>}
+      {error && <p className="text-center text-red-400 font-semibold">{error}</p>}
 
       {!loading && (
         <>
-          <div className="mb-6">
-            <label className="block font-semibold mb-1">Theme</label>
+          <div className="space-y-2">
+            <label className="block font-medium text-lg">Theme</label>
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value)}
-              className="p-2 border rounded"
+              className="p-2 rounded bg-zinc-800 border border-zinc-700"
             >
               <option value="default">Default</option>
               <option value="dark">Dark</option>
@@ -105,79 +110,83 @@ export const SettingsPage = () => {
           </div>
 
           {(userTier === 'glow' || userTier === 'echo') && (
-            <div className="mb-6">
-              <label className="block font-semibold mb-1">Background Color</label>
+            <div className="space-y-2">
+              <label className="block font-medium text-lg">Background Color</label>
               <input
                 type="color"
                 value={background}
                 onChange={(e) => setBackground(e.target.value)}
-                className="w-16 h-10 p-1"
+                className="w-16 h-10 border-2 border-zinc-700 rounded"
               />
             </div>
           )}
 
           {userTier === 'echo' && (
-            <div className="mb-6">
-              <label className="block font-semibold mb-1">Gradient Background</label>
+            <div className="space-y-2">
+              <label className="block font-medium text-lg">Gradient Background</label>
               <input
                 type="text"
                 value={gradientBackground}
                 onChange={(e) => setGradientBackground(e.target.value)}
                 placeholder="e.g., linear-gradient(to right, #ff7e5f, #feb47b)"
-                className="p-2 border rounded w-full"
+                className="p-2 rounded bg-zinc-800 border border-zinc-700 w-full"
               />
             </div>
           )}
 
-          <div className="mb-6">
-            <label className="block font-semibold mb-1">Emoji Pack</label>
+          <div className="space-y-2">
+            <label className="block font-medium text-lg">Emoji Pack</label>
             <select
               value={emojiPack}
               onChange={(e) => setEmojiPack(e.target.value)}
-              className="p-2 border rounded"
+              className="p-2 rounded bg-zinc-800 border border-zinc-700"
             >
               <option value="default">Default</option>
               <option value="custom">Custom</option>
             </select>
           </div>
 
-          <div className="mb-6">
-            <label className="block font-semibold mb-1">Notifications</label>
+          <div className="space-y-2">
+            <label className="block font-medium text-lg">Notifications</label>
             <button
               onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-              className="p-2 bg-blue-500 text-white rounded"
+              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 transition"
             >
               {notificationsEnabled ? 'Disable' : 'Enable'} Notifications
             </button>
           </div>
 
           {(userTier === 'glow' || userTier === 'echo') && (
-            <div className="mb-6">
-              <label className="block font-semibold mb-2">Custom Prefixes (Max 25)</label>
-              {prefixes.map((prefix, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  value={prefix}
-                  onChange={(e) => handlePrefixChange(e, index)}
-                  className="block mb-1 p-2 border rounded w-full"
-                />
-              ))}
+            <div className="space-y-2">
+              <label className="block font-medium text-lg">Custom Prefixes (Max 25)</label>
+              <div className="space-y-1">
+                {prefixes.map((prefix, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    value={prefix}
+                    onChange={(e) => handlePrefixChange(e, index)}
+                    className="block w-full p-2 rounded bg-zinc-800 border border-zinc-700"
+                  />
+                ))}
+              </div>
               <button
                 onClick={addPrefix}
-                className="mt-2 p-2 bg-green-500 text-white rounded"
+                className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
               >
                 + Add Prefix
               </button>
             </div>
           )}
 
-          <button
-            onClick={saveSettings}
-            className="mt-4 p-3 bg-indigo-600 text-white rounded shadow"
-          >
-            Save Settings
-          </button>
+          <div className="text-center">
+            <button
+              onClick={saveSettings}
+              className="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md"
+            >
+              Save Settings
+            </button>
+          </div>
         </>
       )}
     </div>
