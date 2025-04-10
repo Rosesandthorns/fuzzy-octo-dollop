@@ -5,8 +5,7 @@ import { auth } from './lib/firebase';
 import { Sidebar } from './components/Sidebar';
 import { ServerList } from './components/ServerList';
 import { Chat } from './components/Chat';
-import { Auth } from './components/Auth';
-import { SettingsPage } from './components/SettingsPage'; // Import SettingsPage
+import { SettingsPage } from './components/SettingsPage'; // Correctly import the named export
 
 function App() {
   const [user] = useAuthState(auth);
