@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Import Firebase Storage
 import { db } from '../lib/firebase';
 
 export const SettingsPage = () => {
@@ -9,6 +10,7 @@ export const SettingsPage = () => {
   const [emojiPack, setEmojiPack] = useState('default');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [prefixes, setPrefixes] = useState(['!']);
+  const [emojiImages, setEmojiImages] = useState([]);
   const [userTier, setUserTier] = useState('free');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,6 +34,7 @@ export const SettingsPage = () => {
           setNotificationsEnabled(data.notificationsEnabled ?? true);
           setPrefixes(data.prefixes || ['!']);
           setUserTier(data.tier || 'free');
+          setEmojiImages(data.emojiImages || []);
         }
       } catch (error) {
         console.error('Error fetching settings:', error);
@@ -59,6 +62,7 @@ export const SettingsPage = () => {
         notificationsEnabled,
         prefixes,
         tier: userTier,
+        emojiImages,
       });
       alert('Settings saved successfully!');
     } catch (error) {
@@ -87,6 +91,33 @@ export const SettingsPage = () => {
     setPrefixes([...prefixes, '']);
   };
 
+  const handleEmojiUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + emojiImages.length > 15) {
+      alert('You can only upload up to 15 emojis.');
+      return;
+    }
+
+    const storage = getStorage(); // Initialize Firebase Storage
+    const uploadedUrls: string[] = [];
+
+    setLoading(true);
+    try {
+      for (const file of files) {
+        const storageRef = ref(storage, `emojis/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+        uploadedUrls.push(downloadURL);
+      }
+      setEmojiImages([...emojiImages, ...uploadedUrls]);
+    } catch (error) {
+      console.error('Error uploading emojis:', error);
+      setError('Failed to upload emojis. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto text-white bg-zinc-900 rounded-2xl shadow-lg space-y-6">
       <h1 className="text-4xl font-extrabold text-center">Settings</h1>
@@ -109,18 +140,6 @@ export const SettingsPage = () => {
             </select>
           </div>
 
-          {(userTier === 'glow' || userTier === 'echo') && (
-            <div className="space-y-2">
-              <label className="block font-medium text-lg">Background Color</label>
-              <input
-                type="color"
-                value={background}
-                onChange={(e) => setBackground(e.target.value)}
-                className="w-16 h-10 border-2 border-zinc-700 rounded"
-              />
-            </div>
-          )}
-
           {userTier === 'echo' && (
             <div className="space-y-2">
               <label className="block font-medium text-lg">Gradient Background</label>
@@ -135,49 +154,15 @@ export const SettingsPage = () => {
           )}
 
           <div className="space-y-2">
-            <label className="block font-medium text-lg">Emoji Pack</label>
-            <select
-              value={emojiPack}
-              onChange={(e) => setEmojiPack(e.target.value)}
-              className="p-2 rounded bg-zinc-800 border border-zinc-700"
-            >
-              <option value="default">Default</option>
-              <option value="custom">Custom</option>
-            </select>
+            <label className="block font-medium text-lg">Emoji Pack Upload (Max 15)</label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleEmojiUpload}
+              className="text-sm file:bg-indigo-600 file:text-white file:px-4 file:py-2 file:rounded file:cursor-pointer"
+            />
           </div>
-
-          <div className="space-y-2">
-            <label className="block font-medium text-lg">Notifications</label>
-            <button
-              onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-              className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 transition"
-            >
-              {notificationsEnabled ? 'Disable' : 'Enable'} Notifications
-            </button>
-          </div>
-
-          {(userTier === 'glow' || userTier === 'echo') && (
-            <div className="space-y-2">
-              <label className="block font-medium text-lg">Custom Prefixes (Max 25)</label>
-              <div className="space-y-1">
-                {prefixes.map((prefix, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    value={prefix}
-                    onChange={(e) => handlePrefixChange(e, index)}
-                    className="block w-full p-2 rounded bg-zinc-800 border border-zinc-700"
-                  />
-                ))}
-              </div>
-              <button
-                onClick={addPrefix}
-                className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
-              >
-                + Add Prefix
-              </button>
-            </div>
-          )}
 
           <div className="text-center">
             <button
