@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, Users, Settings, LogOut, X } from 'lucide-react';
+import { MessageSquare, Users, Settings, LogOut } from 'lucide-react';
 import { auth, db } from '../lib/firebase'; // Make sure `db` is initialized for Firestore
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
 
 export function Sidebar() {
-  const [showSettings, setShowSettings] = useState(false);
   const [theme, setTheme] = useState('dark'); // Default theme
-
   const user = auth.currentUser;
+  const navigate = useNavigate(); // Initialize navigate function
 
   useEffect(() => {
     const fetchTheme = async () => {
@@ -70,7 +70,7 @@ export function Sidebar() {
             <Users className="w-6 h-6" />
           </button>
           <button
-            onClick={() => setShowSettings(true)}
+            onClick={() => navigate('/settings')} // Navigate to settings page
             className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
             title="Settings"
           >
@@ -85,49 +85,6 @@ export function Sidebar() {
           <LogOut className="w-6 h-6" />
         </button>
       </div>
-
-      {showSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-96">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Settings</h2>
-              <button
-                onClick={() => setShowSettings(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Theme
-                </label>
-                <select
-                  value={theme}
-                  onChange={(e) => handleThemeChange(e.target.value)}
-                  className="w-full bg-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="dark">Dark</option>
-                  <option value="light">Light</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Notifications
-                </label>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="rounded bg-gray-700 border-gray-600 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="ml-2 text-gray-300">Enable notifications</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
