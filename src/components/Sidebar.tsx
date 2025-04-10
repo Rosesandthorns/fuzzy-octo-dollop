@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageSquare, Users, Settings, LogOut } from 'lucide-react';
-import { auth, db } from '../lib/firebase'; // Make sure `db` is initialized for Firestore
+import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
