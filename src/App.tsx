@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from './lib/firebase';
+import { Auth } from './components/Auth';
 import { Sidebar } from './components/Sidebar';
 import { ServerList } from './components/ServerList';
 import { Chat } from './components/Chat';
