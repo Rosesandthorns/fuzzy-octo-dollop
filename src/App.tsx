@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { ServerList } from './components/ServerList';
 import { Chat } from './components/Chat';
 import { Auth } from './components/Auth';
+import { SettingsPage } from './components/SettingsPage'; // Import SettingsPage
 
 function App() {
   const [user] = useAuthState(auth);
@@ -19,17 +20,32 @@ function App() {
     <Router>
       <div className="flex h-screen">
         <Sidebar />
-        <ServerList onSelectServer={setCurrentServer} />
-        {currentServer ? (
-          <Chat channelId={currentServer} />
-        ) : (
-          <div className="flex-1 bg-gray-700 flex items-center justify-center">
-            <div className="text-center text-gray-400">
-              <h2 className="text-2xl font-bold mb-2">Welcome to Flux!</h2>
-              <p>Select a server to start chatting</p>
-            </div>
-          </div>
-        )}
+        <Routes>
+          {/* Add a route for SettingsPage */}
+          <Route path="/settings" element={<SettingsPage />} />
+          
+          {/* Default layout */}
+          <Route
+            path="/"
+            element={
+              <>
+                <ServerList onSelectServer={setCurrentServer} />
+                {currentServer ? (
+                  <Chat channelId={currentServer} />
+                ) : (
+                  <div className="flex-1 bg-gray-700 flex items-center justify-center">
+                    <div className="text-center text-gray-400">
+                      <h2 className="text-2xl font-bold mb-2">Welcome to Flux!</h2>
+                      <p>Select a server to start chatting</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            }
+          />
+          {/* Redirect any unknown routes to "/" */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </Router>
   );
