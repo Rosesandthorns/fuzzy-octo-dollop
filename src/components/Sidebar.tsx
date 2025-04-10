@@ -3,12 +3,13 @@ import { MessageSquare, Users, Settings, LogOut } from 'lucide-react';
 import { auth, db } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for routing
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useNavigate and useLocation
 
 export function Sidebar() {
   const [theme, setTheme] = useState('dark'); // Default theme
   const user = auth.currentUser;
   const navigate = useNavigate(); // Initialize navigate function
+  const location = useLocation(); // Get the current location
 
   useEffect(() => {
     const fetchTheme = async () => {
@@ -57,26 +58,42 @@ export function Sidebar() {
           <MessageSquare className="text-white w-6 h-6" />
         </div>
         <nav className="flex-1 space-y-4">
+          {/* Home Button */}
           <button
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-            title="Messages"
+            onClick={() => navigate('/')} // Navigate to default page
+            className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
+              location.pathname === '/'
+                ? 'bg-indigo-600 text-white' // Active state styles
+                : 'text-gray-400 hover:text-white hover:bg-gray-800' // Inactive state styles
+            }`}
+            title="Home"
           >
             <MessageSquare className="w-6 h-6" />
           </button>
+
+          {/* Users Button */}
           <button
             className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
             title="Users"
           >
             <Users className="w-6 h-6" />
           </button>
+
+          {/* Settings Button */}
           <button
             onClick={() => navigate('/settings')} // Navigate to settings page
-            className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+            className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors ${
+              location.pathname === '/settings'
+                ? 'bg-indigo-600 text-white' // Active state styles
+                : 'text-gray-400 hover:text-white hover:bg-gray-800' // Inactive state styles
+            }`}
             title="Settings"
           >
             <Settings className="w-6 h-6" />
           </button>
         </nav>
+
+        {/* Logout Button */}
         <button
           onClick={handleLogout}
           className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg mt-auto transition-colors"
