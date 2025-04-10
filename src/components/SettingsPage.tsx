@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { useAuth } from '../hooks/useAuth';
 
-export const SettingsPage = () => { // Updated export to named export
-  const { user, userTier } = useAuth();
+export const SettingsPage = () => {
   const [theme, setTheme] = useState('default');
   const [background, setBackground] = useState('#ffffff');
   const [gradientBackground, setGradientBackground] = useState('');
@@ -13,6 +11,10 @@ export const SettingsPage = () => { // Updated export to named export
   const [prefixes, setPrefixes] = useState(['!']);
   const [loading, setLoading] = useState(false); // Loading state
   const [error, setError] = useState(''); // Error state
+
+  // Dummy user data for demonstration purposes (replace this with actual user data as needed)
+  const user = { uid: 'dummyUserId' };
+  const userTier = 'free'; // Replace with actual logic to determine the user's tier
 
   useEffect(() => {
     const fetchSettings = async () => {
