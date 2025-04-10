@@ -10,10 +10,15 @@ const firebaseConfig = {
   storageBucket: "flux-1ff34.firebasestorage.app",
   messagingSenderId: "587303039653",
   appId: "1:587303039653:web:52d7ffc7a730529f2d534c",
-  measurementId: "G-DZJ0Z9YT18"
+  measurementId: "G-DZJ0Z9YT18",
 };
 
 export const app = initializeApp(firebaseConfig);
 export const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+// Attach `auth` to the global `window` object
+if (typeof window !== "undefined") {
+  (window as any).auth = auth;
+}
